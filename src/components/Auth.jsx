@@ -11,10 +11,25 @@ function Auth({ onAuthChange }) {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    // Check if Supabase is properly configured
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+    
+    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('placeholder')) {
+      setError('Supabase is not configured. Please check your environment variables.')
+      return
+    }
+
     // Check active sessions
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error getting session:', error)
+        return
+      }
       setUser(session?.user ?? null)
       onAuthChange(session?.user ?? null)
+    }).catch((error) => {
+      console.error('Error in getSession:', error)
     })
 
     // Listen for auth changes

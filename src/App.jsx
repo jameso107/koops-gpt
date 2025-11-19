@@ -7,13 +7,30 @@ import Sidebar from './components/Sidebar'
 import { saveConversation, loadConversation, trackUserActivity } from './lib/database'
 import './App.css'
 
+// Check for required environment variables
+const checkEnvVars = () => {
+  const missing = []
+  if (!import.meta.env.VITE_SUPABASE_URL) missing.push('VITE_SUPABASE_URL')
+  if (!import.meta.env.VITE_SUPABASE_ANON_KEY) missing.push('VITE_SUPABASE_ANON_KEY')
+  if (!import.meta.env.VITE_OPENAI_API_KEY) missing.push('VITE_OPENAI_API_KEY')
+  
+  if (missing.length > 0) {
+    console.error('Missing environment variables:', missing.join(', '))
+    return false
+  }
+  return true
+}
+
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
 
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true, // Note: In production, use a backend proxy
-})
+// Initialize OpenAI client (will be checked in checkEnvVars)
+const openai = import.meta.env.VITE_OPENAI_API_KEY
+  ? new OpenAI({
+      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+      dangerouslyAllowBrowser: true, // Note: In production, use a backend proxy
+    })
+  : null
 
 const TOOLS = [
   { id: 1, name: 'Tool 1', prompt: 'You are Tool 1. Help the user with Tool 1 specific tasks.' },
@@ -29,6 +46,13 @@ const TOOLS = [
 function App() {
   const [user, setUser] = useState(null)
   const [selectedTool, setSelectedTool] = useState(TOOLS[0])
+  const [envError, setEnvError] = useState(null)
+
+  useEffect(() => {
+    if (!checkEnvVars()) {
+      setEnvError('Missing required environment variables. Please check your configuration.')
+    }
+  }, [])
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -202,6 +226,10 @@ function App() {
           content: userMessage.content,
         },
       ]
+
+      if (!openai) {
+        throw new Error('OpenAI API key is not configured')
+      }
 
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o',
@@ -380,6 +408,24 @@ function App() {
 
   const removeFile = (index) => {
     setAttachedFiles((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  // Show error if environment variables are missing
+  if (envError) {
+    return (
+      <div className="app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+        <div style={{ background: 'white', padding: '2rem', borderRadius: '16px', maxWidth: '500px', textAlign: 'center' }}>
+          <h2 style={{ color: '#d32f2f', marginBottom: '1rem' }}>Configuration Error</h2>
+          <p style={{ color: '#666', marginBottom: '1rem' }}>{envError}</p>
+          <p style={{ color: '#666', fontSize: '0.9rem' }}>
+            Please ensure the following environment variables are set in Vercel:
+            <br />• VITE_SUPABASE_URL
+            <br />• VITE_SUPABASE_ANON_KEY
+            <br />• VITE_OPENAI_API_KEY
+          </p>
+        </div>
+      </div>
+    )
   }
 
   // Show auth screen if not logged in
