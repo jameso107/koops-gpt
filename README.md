@@ -11,6 +11,11 @@ A ChatGPT wrapper application for Koops Automation Systems, featuring a modern R
 - 📱 Responsive design for mobile and desktop
 - 🎯 Separate prompts/configurations for each tool
 - 💾 Conversation history maintained per tool
+- 🔐 Email/password authentication
+- 📊 User activity tracking
+- 💬 Persistent conversation history in database
+- 📁 Sidebar for managing conversation history
+- 📄 File upload support (PDF, DOCX, images, text files)
 
 ## Getting Started
 
@@ -26,16 +31,28 @@ A ChatGPT wrapper application for Koops Automation Systems, featuring a modern R
 npm install
 ```
 
-2. Configure API Key:
-   - The API key is already configured in the `.env` file
-   - For production, consider using a backend proxy to keep the API key secure
+2. Set up Supabase (Required for authentication and database):
+   - Follow the detailed instructions in `SUPABASE_SETUP.md`
+   - Create a Supabase project
+   - Configure Google and Microsoft OAuth
+   - Run the database schema SQL
+   - Get your Supabase URL and anon key
 
-3. Start the development server:
+3. Configure Environment Variables:
+   - Create a `.env` file in the root directory
+   - Add the following variables:
+     ```env
+     VITE_SUPABASE_URL=your_supabase_project_url
+     VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+     VITE_OPENAI_API_KEY=your_openai_api_key
+     ```
+
+4. Start the development server:
 ```bash
 npm run dev
 ```
 
-4. Open your browser and navigate to the URL shown in the terminal (typically `http://localhost:5173`)
+5. Open your browser and navigate to the URL shown in the terminal (typically `http://localhost:5173`)
 
 ### Building for Production
 
@@ -119,12 +136,22 @@ Deploying to Vercel is simple and free. Here are two methods:
 ```
 koops-gpt/
 ├── src/
+│   ├── components/
+│   │   ├── Auth.jsx     # Authentication component
+│   │   ├── Auth.css     # Auth styles
+│   │   ├── Sidebar.jsx  # Conversation history sidebar
+│   │   └── Sidebar.css  # Sidebar styles
+│   ├── lib/
+│   │   ├── supabase.js  # Supabase client configuration
+│   │   └── database.js # Database utility functions
 │   ├── App.jsx          # Main application component
 │   ├── App.css          # Application styles
 │   ├── main.jsx         # React entry point
 │   └── index.css        # Global styles
 ├── public/
 │   └── koops.png        # Logo file
+├── database-schema.sql   # Database schema (run in Supabase)
+├── SUPABASE_SETUP.md    # Detailed Supabase setup guide
 ├── index.html           # HTML template
 ├── package.json         # Dependencies and scripts
 └── vite.config.js       # Vite configuration
@@ -139,6 +166,19 @@ The app includes 8 tools (Tool 1 through Tool 8). Each tool has its own system p
 3. Update the `prompt` field for each tool with your custom prompts
 
 Each tool maintains its own conversation history, so switching between tools will show different conversation contexts.
+
+## Authentication & Database
+
+The application uses **Supabase** for:
+- **Authentication**: Email/password sign-in and sign-up
+- **Database**: PostgreSQL for storing conversations and user activity
+- **Security**: Row Level Security (RLS) policies ensure users can only access their own data
+
+### Setup Required
+
+1. **Create Supabase Project**: See `SUPABASE_SETUP.md` for detailed instructions
+2. **Run Database Schema**: Execute `database-schema.sql` in Supabase SQL Editor
+3. **Add Environment Variables**: Add Supabase credentials to `.env`
 
 ## API Integration
 

@@ -1,6 +1,5 @@
 .app {
   display: flex;
-  flex-direction: column;
   height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -8,6 +7,20 @@
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .app-main {
+    margin-left: 300px;
+  }
 }
 
 .app-header {
@@ -20,6 +33,44 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sidebar-toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(102, 126, 234, 0.1);
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  border-radius: 8px;
+  font-size: 1.5rem;
+  color: #667eea;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-toggle-button:hover {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+}
+
+@media (min-width: 768px) {
+  .sidebar-toggle-button {
+    display: none;
+  }
 }
 
 .header-content {
@@ -195,6 +246,27 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
+.message-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.file-tag {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: rgba(102, 126, 234, 0.2);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.user-message .file-tag {
+  background: rgba(102, 126, 234, 0.15);
+  color: #667eea;
+}
+
 .message-content {
   padding: 1rem 1.25rem;
   border-radius: 16px;
@@ -251,6 +323,7 @@
 
 .input-container {
   display: flex;
+  flex-direction: column;
   gap: 0.75rem;
   padding: 1rem;
   background: rgba(255, 255, 255, 0.95);
@@ -258,6 +331,86 @@
   border-radius: 16px;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
   margin-top: 1rem;
+}
+
+.attached-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.attached-file-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.file-name {
+  color: #667eea;
+  font-weight: 500;
+}
+
+.remove-file-button {
+  background: none;
+  border: none;
+  color: #667eea;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.remove-file-button:hover {
+  background: rgba(102, 126, 234, 0.2);
+  color: #764ba2;
+}
+
+.input-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-input-label {
+  padding: 0.75rem;
+  background: rgba(102, 126, 234, 0.1);
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #667eea;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.file-input-label:hover {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+  transform: translateY(-2px);
+}
+
+.file-input-label:active {
+  transform: translateY(0);
 }
 
 .message-input {
@@ -338,6 +491,23 @@
 
   .welcome-message h2 {
     font-size: 1.5rem;
+  }
+
+  .input-row {
+    flex-wrap: wrap;
+  }
+
+  .file-input-label {
+    padding: 0.6rem;
+  }
+
+  .attached-files {
+    max-width: 100%;
+  }
+
+  .attached-file-item {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.6rem;
   }
 }
 
