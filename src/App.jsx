@@ -6,6 +6,8 @@ import Auth from './components/Auth'
 import Sidebar from './components/Sidebar'
 import AddTool from './components/AddTool'
 import { saveConversation, loadConversation, trackUserActivity, loadCustomTools, saveCustomTool } from './lib/database'
+import { parsePDFRequest, generatePDF, cleanPDFMarkers } from './lib/pdfGenerator'
+import { searchWeb, crawlWebPage, searchAndCrawl } from './lib/webSearch'
 import './App.css'
 
 // Check for required environment variables
@@ -14,6 +16,8 @@ const checkEnvVars = () => {
   if (!import.meta.env.VITE_SUPABASE_URL) missing.push('VITE_SUPABASE_URL')
   if (!import.meta.env.VITE_SUPABASE_ANON_KEY) missing.push('VITE_SUPABASE_ANON_KEY')
   if (!import.meta.env.VITE_OPENAI_API_KEY) missing.push('VITE_OPENAI_API_KEY')
+  
+  // VITE_SERPAPI_KEY is optional (only needed for Web Search tool)
   
   if (missing.length > 0) {
     console.error('Missing environment variables:', missing.join(', '))
@@ -37,7 +41,28 @@ const TOOLS = [
   { 
     id: 0, 
     name: 'KoopsGPT', 
-    prompt: 'You are a helpful AI assistant. Provide clear, accurate, and helpful responses to the user\'s questions.',
+    prompt: `You are a helpful AI assistant. Provide clear, accurate, and helpful responses to the user's questions.
+
+IMPORTANT: You have the ability to create downloadable PDF documents. When a user asks you to create a document, PDF, or downloadable file, you should:
+
+1. Format your response with special markers:
+   - Start with: [PDF_START:filename.pdf] (replace filename.pdf with a descriptive name)
+   - Include the document content
+   - End with: [PDF_END]
+
+2. The content between these markers will be converted to a PDF and made available for download.
+
+3. After the PDF markers, you can include additional text or explanations.
+
+Example:
+[PDF_START:report.pdf]
+Title: Monthly Report
+Date: January 2024
+
+Content here...
+[PDF_END]
+
+This will create a downloadable PDF file.`,
     logo: '/koops-square.jpg'
   },
   { 
@@ -321,6 +346,35 @@ Final note: Always assume something critical is missing. You're not paranoid—y
   },
   { 
     id: 7, 
+    name: 'Web Search', 
+    prompt: `You are a web search and research assistant with the ability to search the internet and crawl web pages.
+
+Your capabilities:
+1. **Web Search**: You can search the web for current information, news, research, and any topic the user requests.
+2. **Web Crawling**: You can fetch and analyze content from specific web pages or URLs.
+3. **Research**: You can perform comprehensive research by searching multiple queries and analyzing results.
+
+When a user asks you to search the web or find information:
+- Use the search function to find relevant results
+- Summarize the findings clearly
+- Cite your sources with links
+- If the user wants detailed information, you can crawl specific pages
+
+When a user provides a URL or asks you to analyze a webpage:
+- Use the crawl function to fetch the page content
+- Extract and summarize the key information
+- Provide insights and analysis
+
+IMPORTANT: Always cite your sources with links. Be transparent about where information comes from.
+
+You also have the ability to create downloadable PDF documents. When a user asks you to create a document, PDF, or downloadable file, format your response with:
+- Start: [PDF_START:filename.pdf] (use a descriptive filename)
+- Content: The document content
+- End: [PDF_END]`,
+    logo: '/koops-square.jpg' // Using default logo, can be updated later
+  },
+  { 
+    id: 8, 
     name: '+ Add New Tool', 
     prompt: null, // Special marker for "add tool" option
     isAddTool: true
@@ -450,6 +504,11 @@ function App() {
     // Build user message content with text and file contents
     let userContent = input.trim()
     
+    // For Web Search tool, add search instructions if user doesn't use markers
+    if (selectedTool.name === 'Web Search' && userContent && !userContent.includes('[SEARCH:') && !userContent.includes('[CRAWL:')) {
+      // The search will be handled in the API call section
+    }
+    
     if (otherFiles.length > 0) {
       const fileContents = otherFiles.map((file) => {
         if (file.error) {
@@ -530,6 +589,67 @@ function App() {
       // Build system prompt with training documents for custom tools
       let systemPrompt = selectedTool.prompt
       
+      // Add PDF generation capability to all tools (except if already in prompt)
+      if (!systemPrompt.includes('[PDF_START]')) {
+        const pdfCapability = `
+
+IMPORTANT: You have the ability to create downloadable PDF documents. When a user asks you to create a document, PDF, or downloadable file, format your response with:
+- Start: [PDF_START:filename.pdf] (use a descriptive filename)
+- Content: The document content
+- End: [PDF_END]
+The content between markers will be converted to a PDF. Example: [PDF_START:report.pdf]Content here[PDF_END]`
+        systemPrompt = systemPrompt + pdfCapability
+      }
+
+      // Handle web search requests for Web Search tool
+      let enhancedUserContent = userContent
+      if (selectedTool.name === 'Web Search') {
+        // Check if user wants to search or crawl
+        const searchMatch = userContent.match(/\[SEARCH:(.+?)\]/i)
+        const crawlMatch = userContent.match(/\[CRAWL:(.+?)\]/i)
+        const searchAndCrawlMatch = userContent.match(/\[SEARCH_AND_CRAWL:(.+?)\]/i)
+
+        if (searchAndCrawlMatch) {
+          try {
+            const query = searchAndCrawlMatch[1].trim()
+            const results = await searchAndCrawl(query, true, 5)
+            enhancedUserContent = `User query: ${query}\n\nSearch Results:\n${JSON.stringify(results, null, 2)}\n\nPlease analyze these search results and provide a comprehensive answer.`
+          } catch (error) {
+            enhancedUserContent = `User query: ${userContent}\n\nError performing web search: ${error.message}\n\nPlease respond to the user's query and let them know about the search error.`
+          }
+        } else if (searchMatch) {
+          try {
+            const query = searchMatch[1].trim()
+            const results = await searchWeb(query, 5)
+            enhancedUserContent = `User query: ${query}\n\nSearch Results:\n${JSON.stringify(results, null, 2)}\n\nPlease analyze these search results and provide a comprehensive answer with citations.`
+          } catch (error) {
+            enhancedUserContent = `User query: ${userContent}\n\nError performing web search: ${error.message}\n\nPlease respond to the user's query and let them know about the search error.`
+          }
+        } else if (crawlMatch) {
+          try {
+            const url = crawlMatch[1].trim()
+            const content = await crawlWebPage(url)
+            enhancedUserContent = `User wants to analyze this URL: ${url}\n\nPage Content:\n${content}\n\nPlease analyze this webpage content and provide insights.`
+          } catch (error) {
+            enhancedUserContent = `User query: ${userContent}\n\nError crawling webpage: ${error.message}\n\nPlease respond to the user's query and let them know about the crawl error.`
+          }
+        } else {
+          // Auto-detect if user wants to search
+          const searchKeywords = ['search', 'find', 'look up', 'what is', 'who is', 'when did', 'where is', 'how to', 'latest', 'current', 'recent']
+          const wantsSearch = searchKeywords.some(keyword => userContent.toLowerCase().includes(keyword))
+          
+          if (wantsSearch) {
+            try {
+              const results = await searchWeb(userContent, 5)
+              enhancedUserContent = `User query: ${userContent}\n\nSearch Results:\n${JSON.stringify(results, null, 2)}\n\nPlease analyze these search results and provide a comprehensive answer with citations.`
+            } catch (error) {
+              // If search fails, proceed with original content
+              enhancedUserContent = userContent
+            }
+          }
+        }
+      }
+      
       if (selectedTool.isCustom && selectedTool.trainingDocuments && selectedTool.trainingDocuments.length > 0) {
         const trainingContent = selectedTool.trainingDocuments
           .map((doc) => {
@@ -562,7 +682,9 @@ function App() {
           })),
         {
           role: 'user',
-          content: userMessage.content,
+          content: typeof userMessage.content === 'string' && enhancedUserContent !== userContent
+            ? enhancedUserContent
+            : userMessage.content,
         },
       ]
 
@@ -577,15 +699,32 @@ function App() {
         max_tokens: 2000,
       })
 
+      const rawContent = completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.'
+      
+      // Check if the response contains a PDF request
+      const pdfData = parsePDFRequest(rawContent)
+      const cleanedContent = cleanPDFMarkers(rawContent)
+      
       const assistantMessage = {
         id: Date.now() + 1,
         role: 'assistant',
-        content: completion.choices[0]?.message?.content || 'Sorry, I could not generate a response.',
+        content: cleanedContent || rawContent,
         tool: selectedTool.name,
+        pdfData: pdfData || null,
       }
 
       const finalMessages = [...updatedMessages, assistantMessage]
       setMessages(finalMessages)
+      
+      // If PDF was requested, generate it automatically
+      if (pdfData) {
+        try {
+          generatePDF(pdfData.content, pdfData.filename, pdfData.title)
+          trackUserActivity(user.id, 'pdf_generated', { filename: pdfData.filename })
+        } catch (error) {
+          console.error('Error generating PDF:', error)
+        }
+      }
 
       // Save conversation with new ID if needed
       try {
@@ -907,7 +1046,28 @@ function App() {
                 )}
                 <div className="message-content">
                   {typeof message.content === 'string' 
-                    ? message.content 
+                    ? (
+                      <>
+                        <div>{message.content}</div>
+                        {message.pdfData && (
+                          <div className="pdf-download-container">
+                            <button
+                              onClick={() => {
+                                try {
+                                  generatePDF(message.pdfData.content, message.pdfData.filename, message.pdfData.title)
+                                } catch (error) {
+                                  console.error('Error generating PDF:', error)
+                                  alert('Failed to generate PDF. Please try again.')
+                                }
+                              }}
+                              className="pdf-download-button"
+                            >
+                              📄 Download PDF: {message.pdfData.filename}
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )
                     : Array.isArray(message.content)
                       ? message.content.map((item, idx) => 
                           item.type === 'text' ? (
