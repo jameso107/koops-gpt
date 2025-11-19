@@ -98,6 +98,13 @@
   gap: 0.75rem;
 }
 
+.tool-logo {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
 .tool-selector label {
   font-weight: 500;
   color: #555;
@@ -114,6 +121,19 @@
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 150px;
+}
+
+.tool-dropdown:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f5f5f5;
+}
+
+.tool-locked-indicator {
+  margin-left: 0.5rem;
+  font-size: 1rem;
+  color: #666;
+  cursor: help;
 }
 
 .tool-dropdown:hover {

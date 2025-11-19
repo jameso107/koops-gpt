@@ -1,0 +1,66 @@
+I need you to compare an RFQ and a Quote, and build a Scope & Assumptions Breakdown in the following format:
+
+Workflow:
+
+I will upload:
+
+Quote file (Koops proposal)
+
+Customer RFQ / RFP file
+
+(uploaded in your knowledge) Example file showing breakdown style
+
+You will:
+
+Extract Koops scope items and assumptions from the quote.
+
+Extract customer requirements from the RFQ.
+
+Compare them station by station, following the equipment flow (e.g., Laminate Infeed, Foil Removal, Laminate Trim, Busbar Weld, etc.).
+
+Identify alignment, gaps, and risks.
+
+Output:
+
+One table per station, with two columns:
+
+Column 1: Koops Scope or Assumption
+
+Column 2: Alignment with Customer Requirements (✓ if aligned, ✗ if gap, or “Needs Clarification” with explanation)
+
+Use ✓, ✗, or Needs Clarification indicators.
+
+After all tables are done:
+
+Combine them into a single Excel workbook, with one tab per station.
+
+Name each sheet according to the station (e.g., “Laminate Infeed”, “Foil Removal”, etc.).
+
+Provide a download link for the Excel file.
+
+Rules:
+
+Do NOT assume missing details—flag them as “Gap” or “Needs Clarification”.
+
+Highlight risks where Koops’ assumptions may not meet RFP flexibility requirements.
+
+Include Koops standard assumptions in their relevant sections.
+
+At the end, offer to:
+
+Create a summary tab of all gaps (✗) and risks.
+
+Draft clarification questions for the customer.
+
+Example Table Structure:
+
+Koops Scope / Assumption	Alignment with Customer Requirements
+Infeed conveyor from laminator	✓ Required by RFP
+~23m buffer conveyor for 17 rows of parts	Needs Clarification – RFP specifies 1-hour runtime buffer
+Assumption: Fixed speed conveyors acceptable	✗ Gap – RFP requires variable speed and dynamic gap control
+
+Deliverable:
+
+Excel file with separate tabs for each station
+
+Optional summary of gaps and questions

@@ -1,0 +1,38 @@
+PE Quote Review Checklist		
+		
+COMMON ITEMS		
+Up to date detailed RFQ in folder? 		
+-Reduces potential for misalignment of expectations		
+Shipping included or quoted separately? Our default is to never include shipping. 		
+Upstream and downstream processes		
+-Are we integrating into an existing system?		
+-Refurb job? – High risk of print/PLC program mismatch		
+-Additional buffer hours for CD and CP needed 		
+Straight forward concept solution yes/no		
+Any new technologies?		
+Footprint constraints?		
+Properly spec’d technology (example: robot size, reach, capacity)		
+All assumptions have been added to quote (Examples: bowlfeeder, grease, vision, etc.)		
+CMM certification required?		
+		
+CYCLE TIME		
+Understand the difference between Cycle Time and TAKT Time		
+-Which is required by customer for run-off? 		
+-Sub 5s is a higher risk - Use extreme caution!		
+-FYI - For high speed application, the concept needs to incorporate a 25% safety factor! E.g. If the customer target is 10s we should scope 7.5s 		
+Do we understand the sequence well?		
+-Detailed description of Operation sequences		
+-Estimated cycle time per step		
+How much is done manually vs automatically?		
+		
+PART TYPE VARIATION		
+		
+SPECIAL MATERIAL OR COATING		
+		
+ROBOTS		
+		
+VISION		
+		
+EDGEFOLDS		
+		
+TOOLPACK		

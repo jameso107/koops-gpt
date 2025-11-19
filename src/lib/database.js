@@ -89,3 +89,39 @@ export const trackUserActivity = async (userId, activityType, metadata = {}) => 
   }
 }
 
+export const loadCustomTools = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('custom_tools')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  } catch (error) {
+    console.error('Error loading custom tools:', error)
+    return []
+  }
+}
+
+export const saveCustomTool = async (name, prompt, trainingDocuments, userId) => {
+  try {
+    const { data, error } = await supabase
+      .from('custom_tools')
+      .insert({
+        name: name.trim(),
+        prompt: prompt.trim(),
+        training_documents: trainingDocuments,
+        created_by: userId
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error saving custom tool:', error)
+    throw error
+  }
+}
+
