@@ -21,6 +21,20 @@
   .app-main {
     margin-left: 300px;
   }
+  
+  .sidebar.collapsed ~ .app-main {
+    margin-left: 0;
+  }
+  
+  .app-header {
+    margin-left: -300px;
+    padding-left: calc(300px + 2rem);
+  }
+  
+  .sidebar.collapsed ~ .app-main .app-header {
+    margin-left: 0;
+    padding-left: 2rem;
+  }
 }
 
 .app-header {
@@ -33,6 +47,11 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
+  width: 100vw;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 100;
+  margin-left: calc(-50vw + 50%);
 }
 
 .header-left {

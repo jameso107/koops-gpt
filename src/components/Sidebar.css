@@ -52,7 +52,7 @@
   color: #333;
 }
 
-.sidebar-close-button {
+.sidebar-collapse-button {
   background: none;
   border: none;
   font-size: 2rem;
@@ -66,9 +66,10 @@
   justify-content: center;
   border-radius: 50%;
   transition: all 0.2s ease;
+  margin-left: auto;
 }
 
-.sidebar-close-button:hover {
+.sidebar-collapse-button:hover {
   background: rgba(0, 0, 0, 0.05);
   color: #333;
 }
@@ -190,6 +191,22 @@
   .sidebar {
     position: relative;
     transform: translateX(0);
+    width: 300px;
+    transition: width 0.3s ease;
+  }
+  
+  .sidebar.collapsed {
+    width: 50px;
+    overflow: visible;
+  }
+  
+  .sidebar.collapsed .sidebar-header {
+    padding: 1rem 0.5rem;
+    justify-content: center;
+  }
+  
+  .sidebar.collapsed .sidebar-collapse-button {
+    margin-left: 0;
   }
 
   .sidebar-overlay {

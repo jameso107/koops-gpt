@@ -392,6 +392,7 @@ function App() {
   const [attachedFiles, setAttachedFiles] = useState([])
   const [currentConversationId, setCurrentConversationId] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [showAddTool, setShowAddTool] = useState(false)
   const messagesEndRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -954,7 +955,9 @@ The content between markers will be converted to a PDF. Example: [PDF_START:repo
         onSelectConversation={handleConversationSelect}
         currentConversationId={currentConversationId}
         isOpen={sidebarOpen}
+        isCollapsed={sidebarCollapsed}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
+        onCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
       <div className="app-main">
         <header className="app-header">

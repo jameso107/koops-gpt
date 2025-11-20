@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import './Sidebar.css'
 
-function Sidebar({ user, onSelectConversation, currentConversationId, isOpen, onToggle }) {
+function Sidebar({ user, onSelectConversation, currentConversationId, isOpen, isCollapsed, onToggle, onCollapse }) {
   const [conversations, setConversations] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -78,17 +78,23 @@ function Sidebar({ user, onSelectConversation, currentConversationId, isOpen, on
   return (
     <>
       <div className={`sidebar-overlay ${isOpen ? 'open' : ''}`} onClick={onToggle} />
-      <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+      <div className={`sidebar ${isOpen ? 'open' : ''} ${isCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">
-          <h2>Conversations</h2>
-          <button onClick={onToggle} className="sidebar-close-button">
-            ×
+          {!isCollapsed && <h2>Conversations</h2>}
+          <button 
+            onClick={onCollapse} 
+            className="sidebar-collapse-button"
+            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {isCollapsed ? '☰' : '×'}
           </button>
         </div>
-        <button onClick={createNewConversation} className="sidebar-new-button">
-          + New Conversation
-        </button>
-        <div className="sidebar-conversations">
+        {!isCollapsed && (
+          <>
+            <button onClick={createNewConversation} className="sidebar-new-button">
+              + New Conversation
+            </button>
+            <div className="sidebar-conversations">
           {loading ? (
             <div className="sidebar-loading">Loading...</div>
           ) : conversations.length === 0 ? (
@@ -120,7 +126,9 @@ function Sidebar({ user, onSelectConversation, currentConversationId, isOpen, on
               </div>
             ))
           )}
-        </div>
+            </div>
+          </>
+        )}
       </div>
     </>
   )
